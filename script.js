@@ -28,13 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // verifica o login
-  const protegido = ["home.html", "gerar.html", "historico.html"];
+  const protegido = ["home.html", "tela-gerar.html", "historico.html"];
   const paginaAtual = window.location.pathname.split("/").pop();
 
   if (protegido.includes(paginaAtual)) {
     const logado = sessionStorage.getItem("logado");
     if (!logado) {
-      window.location.href = "index.html";
+      window.location.href = "tela-login.html";
     }
   }
 
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       sessionStorage.removeItem("logado");
-      window.location.href = "index.html";
+      window.location.href = "tela-login.html";
     });
   }
 
