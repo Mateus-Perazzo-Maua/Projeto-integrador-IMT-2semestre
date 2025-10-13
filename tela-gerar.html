@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="d-flex" id="app-container">
     <!-- Sidebar -->
@@ -28,7 +30,7 @@
         </button>
       </div>
     </aside>
-    
+
     <!-- Conteúdo -->
     <main class="content flex-fill p-5 text-center">
       <div class="welcome-box shadow-sm">
@@ -53,7 +55,8 @@
 
           <!-- Prompt -->
           <label for="prompt" class="fw-semibold mb-1">Descrição da Imagem</label>
-          <textarea id="prompt" class="form-control mb-4" rows="3" placeholder="Exemplo: modelo atômico de Bohr ilustrado em sala de aula..."></textarea>
+          <textarea id="prompt" class="form-control mb-4" rows="3"
+            placeholder="Exemplo: modelo atômico de Bohr ilustrado em sala de aula..."></textarea>
 
           <button id="gerarBtn" class="btn btn-gradient px-4">
             <i class="bi bi-image me-2"></i>Gerar Imagem
@@ -112,11 +115,11 @@
 
       // exemplo: mudar imagem placeholder por semente para diferenciar
       const seed = materia + '-' + tema;
-      imgResultado.src = https://picsum.photos/seed/${encodeURIComponent(seed)}/800/400;
+      imgResultado.src = `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/400`;
 
       resultado.classList.remove('d-none');
-      // se desejar, aqui você integraria a chamada à API real, usando o prompt.
     });
   </script>
 </body>
+
 </html>
