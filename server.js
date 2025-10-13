@@ -8,10 +8,10 @@ const PORT = 3000;
 // Middleware para JSON
 app.use(express.json());
 
-// Servir arquivos estáticos da pasta public
+// Servir arquivos estaticos da pasta public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuração MongoDB
+// Configuracao MongoDB
 const uri = 'mongodb://localhost:27017'; // ou sua URI Atlas
 const dbName = 'meuProjeto';
 let db;
