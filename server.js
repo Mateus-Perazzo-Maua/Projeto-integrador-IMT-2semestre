@@ -1,51 +1,56 @@
+// server.js
 const express = require('express');
-const { MongoClient } = require('mongodb');
 const path = require('path');
+const cors = require('cors');
+const connectDB = require('./database/connection');
+const { getUserByUsername, addUser } = require('./database/userModel');
 
 const app = express();
 const PORT = 3000;
 
-// Middleware para JSON
+// Middleware
+app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
-// Servir arquivos estaticos da pasta public
-app.use(express.static(path.join(__dirname, 'public')));
+// Conecta ao banco
+connectDB();
 
-// Configuracao MongoDB
-const uri = 'mongodb://localhost:27017'; // ou sua URI Atlas
-const dbName = 'meuProjeto';
-let db;
+// ✅ Rota de registro (cadastro)
+app.post('/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-async function connectToDatabase() {
-  if (db) return db;
-  const client = new MongoClient(uri, { useUnifiedTopology: true });
-  await client.connect();
-  console.log('Conectado ao MongoDB');
-  db = client.db(dbName);
-  return db;
-}
+    const userExists = await getUserByUsername(username);
+    if (userExists) {
+      return res.status(400).json({ message: 'Usuário já existe' });
+    }
 
-// Rota login
+    await addUser({ username, password });
+    res.status(201).json({ message: 'Usuário cadastrado com sucesso!' });
+  } catch (err) {
+    console.error('Erro ao registrar:', err);
+    res.status(500).json({ message: 'Erro ao registrar usuário' });
+  }
+});
+
+// ✅ Rota de login
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const db = await connectToDatabase();
-    const usersCollection = db.collection('users');
 
-    const user = await usersCollection.findOne({ username });
-
+    const user = await getUserByUsername(username);
     if (!user || user.password !== password) {
       return res.status(401).json({ message: 'Usuário ou senha incorretos' });
     }
 
     res.json({ message: 'Login realizado com sucesso!' });
   } catch (err) {
-    console.error(err);
+    console.error('Erro no login:', err);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 });
 
-// Start do servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });

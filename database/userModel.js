@@ -1,43 +1,39 @@
 // database/userModel.js
-const { ObjectId } = require('mongodb');
-const { connectToDatabase } = require('./connection');
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: String,
+  email: String,
+});
+
+const User = mongoose.model('User', userSchema);
 
 async function getUsers() {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  return collection.find({}).toArray();
+  return await User.find({});
 }
 
 async function getUserById(id) {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  return collection.findOne({ _id: new ObjectId(id) });
+  return await User.findById(id);
 }
 
 async function getUserByUsername(username) {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  return collection.findOne({ username });
+  return await User.findOne({ username });
 }
 
 async function addUser(userData) {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  const result = await collection.insertOne(userData);
-  return result.insertedId;
+  const user = new User(userData);
+  const savedUser = await user.save();
+  return savedUser._id;
 }
 
 async function updateUser(id, updateData) {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  const result = await collection.updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+  const result = await User.updateOne({ _id: id }, { $set: updateData });
   return result.modifiedCount;
 }
 
 async function deleteUser(id) {
-  const db = await connectToDatabase();
-  const collection = db.collection('users');
-  const result = await collection.deleteOne({ _id: new ObjectId(id) });
+  const result = await User.deleteOne({ _id: id });
   return result.deletedCount;
 }
 
