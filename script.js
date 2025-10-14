@@ -11,21 +11,76 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultado = document.getElementById("resultado");
   const historicoLista = document.getElementById("historico-lista");
 
-  // login
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+  // LOGIN
+if (loginBtn) {
+  loginBtn.addEventListener("click", async () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    loginError.textContent = "";
 
-      if (username === USER && password === PASS) {
+    try {
+      const resposta = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await resposta.json();
+
+      if (resposta.ok) {
         // guarda o login na sessão
         sessionStorage.setItem("logado", "true");
+        sessionStorage.setItem("usuario", username);
         window.location.href = "home.html";
       } else {
-        loginError.textContent = "❌ Usuário ou senha incorretos!";
+        loginError.textContent = "❌ " + data.message;
       }
-    });
-  }
+    } catch (err) {
+      loginError.textContent = "⚠️ Erro ao conectar ao servidor.";
+      console.error(err);
+    }
+  });
+}
+
+// CADASTRO DE USUÁRIO
+const registerBtn = document.getElementById("registerBtn");
+if (registerBtn) {
+  registerBtn.addEventListener("click", async () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const msg = document.getElementById("registerMsg");
+    msg.textContent = "";
+
+    if (!username || !password) {
+      msg.textContent = "⚠️ Preencha todos os campos!";
+      return;
+    }
+
+    try {
+      const resposta = await fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await resposta.json();
+
+      if (resposta.ok) {
+        msg.classList.remove("text-danger");
+        msg.classList.add("text-success");
+        msg.textContent = "✅ Usuário cadastrado com sucesso!";
+        setTimeout(() => (window.location.href = "tela-login.html"), 1500);
+      } else {
+        msg.textContent = "⚠️ " + data.message;
+      }
+    } catch (err) {
+      msg.textContent = "Erro ao conectar com o servidor.";
+      console.error(err);
+    }
+  });
+}
+
+
 
   // verifica o login
   const protegido = ["home.html", "tela-gerar.html", "historico.html"];
