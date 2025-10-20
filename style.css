@@ -1,4 +1,4 @@
-/* === Reset e Fonte === */
+/* corpo e fonte */
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -8,7 +8,7 @@ body {
   overflow: hidden;
 }
 
-/* === Sidebar === */
+/* barra lateral */
 .sidebar {
   width: 250px;
   height: 100vh;
@@ -47,7 +47,7 @@ body {
   box-shadow: 0 2px 10px rgba(29, 186, 205, 0.35);
 }
 
-/* === Botão Logout === */
+/* botão logout */
 .btn-gradient {
   background: linear-gradient(90deg, #1DBACD, #125E6A);
   color: #fff;
@@ -63,7 +63,7 @@ body {
   box-shadow: 0 4px 12px rgba(237, 45, 104, 0.35);
 }
 
-/* === Conteúdo === */
+/* conteúdo */
 .content {
   margin-left: 250px;
   overflow-y: auto;
@@ -74,7 +74,7 @@ body {
   border-bottom-left-radius: 20px;
 }
 
-/* === Caixa central === */
+/* caixa central */
 .welcome-box {
   background: #fff;
   border-radius: 20px;
@@ -89,14 +89,14 @@ body {
   box-shadow: 0 10px 25px rgba(29, 186, 205, 0.15);
 }
 
-/* === Gradiente de texto === */
+/* degradê do texto */
 .text-gradient {
   background: linear-gradient(90deg, #1DBACD, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* === Scroll === */
+/* scroll */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -106,7 +106,7 @@ body {
   border-radius: 10px;
 }
 
-/* === Estatísticas === */
+/* estatísticas */
 .stats-section {
   max-width: 1100px;
   margin: 0 auto;
@@ -125,7 +125,7 @@ body {
   box-shadow: 0 8px 20px rgba(29, 186, 205, 0.2);
 }
 
-/* === Barra de progresso === */
+/* barra de progresso */
 .progress-box {
   background: #fff;
   border-radius: 20px;
@@ -135,7 +135,7 @@ body {
   background: linear-gradient(90deg, #1DBACD, #125E6A);
 }
 
-/* === Login específico === */
+/* login */
 .login-card {
   background: #fff;
   color: #111827;
@@ -175,7 +175,7 @@ body {
   box-shadow: 0 4px 12px rgba(237, 45, 104, 0.35);
 }
 
-/* === Ajuste global para <select> manter consistência com os campos === */
+/* campos de seleção */
 select {
   background: #fff;
   color: #111827;
@@ -189,10 +189,52 @@ select {
   width: 100%;
 }
 
-/* Hover e foco suave (minimalista, sem glow exagerado) */
 select:hover,
 select:focus {
   border-color: #1DBACD;
   /* Azul Poliedro */
   box-shadow: 0 0 0 2px rgba(29, 186, 205, 0.15);
+}
+
+/* estilo da tela-cadastro */
+.cadastro-body {
+  background: linear-gradient(135deg, #0f2027, #125E6A);
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+.cadastro-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+/* lado esquerdo (texto) */
+.cadastro-hero {
+  width: 60%;
+  display: flex;
+  align-items: center;
+  padding-left: 5vw;
+  padding-right: 5vw;
+  color: #fff;
+}
+
+.cadastro-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.cadastro-subtitle {
+  font-size: 1.1rem;
+  max-width: 550px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* lado direito (formulário) */
+.cadastro-form-area {
+  width: 40%;
+  background: #f9fafb;
 }
