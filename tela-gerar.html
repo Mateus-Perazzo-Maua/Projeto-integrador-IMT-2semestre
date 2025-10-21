@@ -12,8 +12,10 @@
 </head>
 
 <body>
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
   <div class="d-flex" id="app-container">
-    <!-- Sidebar -->
+    <!-- barra lateral -->
     <aside class="sidebar d-flex flex-column p-3 text-white">
       <a href="home.html" class="d-flex align-items-center mb-4 text-white text-decoration-none sidebar-logo">
         <i class="bi bi-magic fs-3 me-2"></i>
@@ -31,7 +33,7 @@
       </div>
     </aside>
 
-    <!-- Conteúdo -->
+    <!-- conteúdo -->
     <main class="content flex-fill p-5 text-center">
       <div class="welcome-box shadow-sm">
         <h2 class="mb-3 fw-semibold">🪄 Gerar Imagem com IA</h2>
@@ -64,7 +66,7 @@
             <option value="hq-comics">HQ / Comics</option>
           </select>
 
-          <!-- Prompt -->
+          <!-- descrição da imagem -->
           <label for="prompt" class="fw-semibold mb-1">Descrição da Imagem</label>
           <textarea id="prompt" class="form-control mb-4" rows="3"
             placeholder="Exemplo: modelo atômico de Bohr ilustrado em sala de aula..."></textarea>
@@ -83,8 +85,9 @@
     </main>
   </div>
 
+  <script src="script.js"></script>
   <script>
-    // Apenas temas por matéria (sem professores)
+    // Apenas temas por matéria
     const temas = {
       fisica: ["Leis de Newton", "Eletromagnetismo", "Óptica", "Movimento Retilíneo"],
       quimica: ["Tabela Periódica", "Ligações Químicas", "Reações Orgânicas", "Atomística"]
@@ -131,7 +134,6 @@
       resultado.classList.remove('d-none');
     });
   </script>
-  <script src="script.js"></script>
 
 </body>
 
