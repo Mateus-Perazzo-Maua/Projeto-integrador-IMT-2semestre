@@ -1,7 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const USER = "admin";
-  const PASS = "1234";
-
   // elementos
   const loginBtn = document.getElementById("loginBtn");
   const loginError = document.getElementById("loginError");
@@ -12,55 +8,65 @@ document.addEventListener("DOMContentLoaded", () => {
   const historicoLista = document.getElementById("historico-lista");
 
   // LOGIN
-if (loginBtn) {
-  loginBtn.addEventListener("click", async () => {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    loginError.textContent = "";
-
-    try {
-      const resposta = await fetch("http://localhost:3000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await resposta.json();
-
-      if (resposta.ok) {
-        // guarda o login na sessão
-        sessionStorage.setItem("logado", "true");
-        sessionStorage.setItem("usuario", username);
-        window.location.href = "home.html";
-      } else {
-        loginError.textContent = "❌ " + data.message;
+  if (loginBtn) {
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      loginError.textContent = "";
+  
+      if (!email || !password) {
+        loginError.textContent = "⚠️ Preencha todos os campos!";
+        return;
       }
-    } catch (err) {
-      loginError.textContent = "⚠️ Erro ao conectar ao servidor.";
-      console.error(err);
-    }
-  });
-}
+  
+      try {
+        const resposta = await fetch("http://localhost:3000/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }), // envia email em vez de username
+        });
+  
+        const data = await resposta.json();
+  
+        if (resposta.ok) {
+          // guarda o login na sessão
+          sessionStorage.setItem("logado", "true");
+          sessionStorage.setItem("usuario", email); // salva o email logado
+          window.location.href = "home.html";
+        } else {
+          loginError.textContent = "❌ " + data.message;
+        }
+      } catch (err) {
+        loginError.textContent = "⚠️ Erro ao conectar ao servidor.";
+        console.error(err);
+      }
+    });
+  }
+  
 
 // CADASTRO DE USUÁRIO
 const registerBtn = document.getElementById("registerBtn");
 if (registerBtn) {
   registerBtn.addEventListener("click", async () => {
+    // 👉 Agora temos também o campo de e-mail
     const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim(); // <-- novo campo
     const password = document.getElementById("password").value.trim();
     const msg = document.getElementById("registerMsg");
     msg.textContent = "";
 
-    if (!username || !password) {
+    // 👉 Verifica se todos os campos estão preenchidos
+    if (!username || !email || !password) {
       msg.textContent = "⚠️ Preencha todos os campos!";
       return;
     }
 
     try {
+      // 👉 Envia o e-mail também para o servidor
       const resposta = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, email, password }), // <-- adiciona email aqui
       });
 
       const data = await resposta.json();
@@ -69,6 +75,7 @@ if (registerBtn) {
         msg.classList.remove("text-danger");
         msg.classList.add("text-success");
         msg.textContent = "✅ Usuário cadastrado com sucesso!";
+        // redireciona para o login após 1,5s
         setTimeout(() => (window.location.href = "tela-login.html"), 1500);
       } else {
         msg.textContent = "⚠️ " + data.message;
@@ -79,6 +86,7 @@ if (registerBtn) {
     }
   });
 }
+
 
 
 
@@ -138,5 +146,4 @@ if (registerBtn) {
         historicoLista.appendChild(col);
       });
     }
-  }
-});
+}
