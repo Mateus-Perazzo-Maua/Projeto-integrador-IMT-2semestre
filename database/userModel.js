@@ -1,14 +1,17 @@
 // database/userModel.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
+// Definição do schema
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: String,
-  email: String,
+  email:    { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
 
-const User = mongoose.model('User', userSchema);
+// Aqui criamos e atribuimos o modelo à variável User
+const User = mongoose.model("User", userSchema);
 
+// Funções CRUD
 async function getUsers() {
   return await User.find({});
 }
@@ -19,6 +22,10 @@ async function getUserById(id) {
 
 async function getUserByUsername(username) {
   return await User.findOne({ username });
+}
+
+async function getUserByEmail(email) {
+  return await User.findOne({ email });
 }
 
 async function addUser(userData) {
@@ -37,10 +44,13 @@ async function deleteUser(id) {
   return result.deletedCount;
 }
 
+// Exporta tudo
 module.exports = {
+  User,
   getUsers,
   getUserById,
   getUserByUsername,
+  getUserByEmail,
   addUser,
   updateUser,
   deleteUser,
