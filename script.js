@@ -29,11 +29,20 @@
         const data = await resposta.json();
   
         if (resposta.ok) {
-          // guarda o login na sessão
-          sessionStorage.setItem("logado", "true");
-          sessionStorage.setItem("usuario", email); // salva o email logado
+          const rememberMe = document.getElementById("rememberMe").checked;
+        
+          if (rememberMe) {
+            // Guarda login no localStorage (permanece após fechar o navegador)
+            localStorage.setItem("logado", "true");
+            localStorage.setItem("usuario", email);
+          } else {
+            // Guarda login apenas na sessão (some ao fechar o navegador)
+            sessionStorage.setItem("logado", "true");
+            sessionStorage.setItem("usuario", email);
+          }
+        
           window.location.href = "home.html";
-        } else {
+        }else {
           loginError.textContent = "❌ " + data.message;
         }
       } catch (err) {
@@ -48,21 +57,21 @@
 const registerBtn = document.getElementById("registerBtn");
 if (registerBtn) {
   registerBtn.addEventListener("click", async () => {
-    // 👉 Agora temos também o campo de e-mail
+    
     const username = document.getElementById("username").value.trim();
     const email = document.getElementById("email").value.trim(); // <-- novo campo
     const password = document.getElementById("password").value.trim();
     const msg = document.getElementById("registerMsg");
     msg.textContent = "";
 
-    // 👉 Verifica se todos os campos estão preenchidos
+    
     if (!username || !email || !password) {
       msg.textContent = "⚠️ Preencha todos os campos!";
       return;
     }
 
     try {
-      // 👉 Envia o e-mail também para o servidor
+
       const resposta = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,7 +83,7 @@ if (registerBtn) {
       if (resposta.ok) {
         msg.classList.remove("text-danger");
         msg.classList.add("text-success");
-        msg.textContent = "✅ Usuário cadastrado com sucesso!";
+        msg.textContent = "Usuário cadastrado com sucesso! redirecionando para o login";
         // redireciona para o login após 1,5s
         setTimeout(() => (window.location.href = "tela-login.html"), 1500);
       } else {
@@ -95,19 +104,24 @@ if (registerBtn) {
   const paginaAtual = window.location.pathname.split("/").pop();
 
   if (protegido.includes(paginaAtual)) {
-    const logado = sessionStorage.getItem("logado");
+    const logado = sessionStorage.getItem("logado") || localStorage.getItem("logado");
     if (!logado) {
       window.location.href = "tela-login.html";
     }
   }
+  
 
   // logout
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       sessionStorage.removeItem("logado");
+      sessionStorage.removeItem("usuario");
+      localStorage.removeItem("logado");
+      localStorage.removeItem("usuario");
       window.location.href = "tela-login.html";
     });
   }
+  
 
   // gerar imagem
   if (gerarBtn) {
