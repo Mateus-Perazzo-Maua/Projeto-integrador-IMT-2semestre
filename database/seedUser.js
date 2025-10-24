@@ -10,7 +10,7 @@ async function seedAdminUser() {
     console.log('Usuário admin já existe');
     return;
   }
-
+  
   const adminUser = {
     username: 'admin',
     password: '1234',

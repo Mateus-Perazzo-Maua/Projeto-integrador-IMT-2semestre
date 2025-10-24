@@ -3,10 +3,15 @@ const mongoose = require("mongoose");
 
 // Definição do schema
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email:    { type: String, required: true, unique: true },
+  username: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    match: /@(sistemapoliedro\.com\.br|p4ed\.com)$/i
+  },
   password: { type: String, required: true }
 });
+
 
 // Aqui criamos e atribuimos o modelo à variável User
 const User = mongoose.model("User", userSchema);
