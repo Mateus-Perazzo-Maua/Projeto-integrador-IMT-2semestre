@@ -96,6 +96,24 @@ body {
   }
 }
 
+.menu-toggle {
+  left: 15px;
+  transition: left 0.28s ease, transform 0.28s ease;
+  z-index: 2100;
+}
+
+body.sidebar-open .menu-toggle {
+  left: 260px;
+}
+
+/* ajuste em telas menores */
+@media (max-width: 992px) {
+  body.sidebar-open .menu-toggle {
+    left: 220px;
+  }
+}
+
+
 /* botão logout */
 .btn-gradient {
   background: linear-gradient(90deg, #1DBACD, #125E6A);

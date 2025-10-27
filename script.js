@@ -213,6 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (menuToggle && sidebar) {
     menuToggle.addEventListener("click", () => {
       sidebar.classList.toggle("active");
+      document.body.classList.toggle("sidebar-open");
     });
   }
 });
