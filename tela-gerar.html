@@ -84,57 +84,7 @@
       </div>
     </main>
   </div>
-
   <script src="script.js"></script>
-  <script>
-    // Apenas temas por matéria
-    const temas = {
-      fisica: ["Leis de Newton", "Eletromagnetismo", "Óptica", "Movimento Retilíneo"],
-      quimica: ["Tabela Periódica", "Ligações Químicas", "Reações Orgânicas", "Atomística"]
-    };
-
-    const materiaSelect = document.getElementById("materia");
-    const temaSelect = document.getElementById("tema");
-    const gerarBtn = document.getElementById("gerarBtn");
-    const resultado = document.getElementById("resultado");
-    const imgResultado = document.getElementById("imgResultado");
-    const promptField = document.getElementById("prompt");
-
-    // Ao mudar a matéria, atualiza os temas
-    materiaSelect.addEventListener("change", () => {
-      const materia = materiaSelect.value;
-
-      temaSelect.innerHTML = '<option selected disabled>Selecione o tema</option>';
-      if (temas[materia]) {
-        temas[materia].forEach(t => {
-          const option = document.createElement("option");
-          option.textContent = t;
-          option.value = t;
-          temaSelect.appendChild(option);
-        });
-      }
-
-      // esconde resultado anterior e limpa prompt opcionalmente
-      resultado.classList.add('d-none');
-    });
-
-    // Simulação de geração: mostra imagem placeholder e exibe prompt usado
-    gerarBtn.addEventListener("click", () => {
-      const prompt = promptField.value.trim();
-      const materia = materiaSelect.value;
-      const tema = temaSelect.value;
-
-      if (!materia || !tema) return alert('Por favor selecione a matéria e o tema.');
-      if (!prompt) return alert('Por favor descreva a imagem desejada.');
-
-      // exemplo: mudar imagem placeholder por semente para diferenciar
-      const seed = materia + '-' + tema;
-      imgResultado.src = `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/400`;
-
-      resultado.classList.remove('d-none');
-    });
-  </script>
-
 </body>
 
 </html>

@@ -117,23 +117,75 @@ if (logoutBtn) {
 // gerar imagem
 if (gerarBtn) {
   gerarBtn.addEventListener("click", () => {
-    const prompt = promptInput.value.trim();
+    const materiaSelect = document.getElementById("materia");
+    const temaSelect = document.getElementById("tema");
+    const estiloSelect = document.getElementById("estilo");
+    const promptField = document.getElementById("prompt");
+    const imgResultado = document.getElementById("imgResultado");
+
+    if (!materiaSelect || !temaSelect || !promptField) return;
+
+    const materia = materiaSelect.value;
+    const tema = temaSelect.value;
+    const estilo = estiloSelect ? estiloSelect.value : "";
+    const prompt = promptField.value.trim();
+
+    if (!materia || materia === "Selecione a matéria") {
+      alert("Por favor, selecione a matéria.");
+      return;
+    }
+    if (!tema || tema === "Selecione o tema") {
+      alert("Por favor, selecione o tema.");
+      return;
+    }
     if (!prompt) {
-      resultado.innerHTML = `<p class="text-danger">⚠️ Digite uma descrição primeiro!</p>`;
+      alert("Por favor, descreva a imagem desejada.");
       return;
     }
 
+    resultado.classList.remove("d-none");
     resultado.innerHTML = `<p>⏳ Gerando imagem para: "${prompt}"...</p>`;
 
     setTimeout(() => {
-      const imgUrl = `https://picsum.photos/500/300?random=${Math.random()}`;
-      resultado.innerHTML = `<img src="${imgUrl}" alt="Imagem gerada" class="img-fluid rounded shadow"/>`;
+      const seed = `${materia}-${tema}-${estilo}-${prompt}`;
+      const imgUrl = `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/400`;
+
+      resultado.innerHTML = `
+        <h5 class="fw-semibold mb-3">Resultado:</h5>
+        <img id="imgResultado" src="${imgUrl}" class="rounded-4 shadow-lg" alt="gerado" />
+      `;
 
       // salva no histórico
       const historico = JSON.parse(localStorage.getItem("historico")) || [];
       historico.unshift(imgUrl);
       localStorage.setItem("historico", JSON.stringify(historico));
     }, 2000);
+  });
+}
+
+// Temas automáticos por matéria
+
+const temas = {
+  fisica: ["Leis de Newton", "Eletromagnetismo", "Óptica", "Movimento Retilíneo"],
+  quimica: ["Tabela Periódica", "Ligações Químicas", "Reações Orgânicas", "Atomística"],
+};
+
+const materiaSelect = document.getElementById("materia");
+const temaSelect = document.getElementById("tema");
+
+if (materiaSelect && temaSelect) {
+  materiaSelect.addEventListener("change", () => {
+    const materia = materiaSelect.value;
+    temaSelect.innerHTML = '<option selected disabled>Selecione o tema</option>';
+
+    if (temas[materia]) {
+      temas[materia].forEach(t => {
+        const option = document.createElement("option");
+        option.textContent = t;
+        option.value = t;
+        temaSelect.appendChild(option);
+      });
+    }
   });
 }
 
