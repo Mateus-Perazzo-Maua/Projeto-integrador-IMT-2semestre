@@ -60,12 +60,17 @@ body {
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
-  z-index: 2000;
-  transition: background 0.3s;
+  z-index: 2100;
+  transition: transform 0.3s ease, background 0.3s;
 }
 
 .menu-toggle:hover {
   background: linear-gradient(135deg, #203a43, #2c5364);
+}
+
+/* movimento do botão quando abre a barra leteral */
+body.sidebar-open .menu-toggle {
+  transform: translateX(260px);
 }
 
 /* responsividade da barra lateral */
@@ -90,29 +95,25 @@ body {
     display: block;
   }
 
+  body.sidebar-open .menu-toggle {
+    transform: translateX(220px); /* ajuste menor para telas pequenas */
+  }
+
   .content {
     margin-left: 0 !important;
     width: 100%;
   }
 }
 
-.menu-toggle {
-  left: 15px;
-  transition: left 0.28s ease, transform 0.28s ease;
-  z-index: 2100;
-}
-
-body.sidebar-open .menu-toggle {
-  left: 260px;
-}
-
-/* ajuste em telas menores */
+/* remove o canto arredondado quando a tela está pequena */
 @media (max-width: 992px) {
-  body.sidebar-open .menu-toggle {
-    left: 220px;
+  body,
+  .content {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    background-color: #f8f9fa;
   }
 }
-
 
 /* botão logout */
 .btn-gradient {
