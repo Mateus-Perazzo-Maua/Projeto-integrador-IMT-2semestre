@@ -7,6 +7,9 @@ const promptInput = document.getElementById("prompt");
 const resultado = document.getElementById("resultado");
 const historicoLista = document.getElementById("historico-lista");
 
+// url da API
+const API_URL = 'http://localhost:3000';
+
 // LOGIN
 if (loginBtn) {
   loginBtn.addEventListener("click", async () => {
@@ -30,17 +33,15 @@ if (loginBtn) {
 
       if (resposta.ok) {
         const rememberMe = document.getElementById("rememberMe").checked;
-      
+
         if (rememberMe) {
-          // Guarda login no localStorage (permanece após fechar o navegador)
           localStorage.setItem("logado", "true");
           localStorage.setItem("usuario", email);
         } else {
-          // Guarda login apenas na sessão (some ao fechar o navegador)
           sessionStorage.setItem("logado", "true");
           sessionStorage.setItem("usuario", email);
         }
-      
+
         window.location.href = "home.html";
       } else {
         loginError.textContent = "❌ " + data.message;
@@ -80,7 +81,6 @@ if (registerBtn) {
         msg.classList.remove("text-danger");
         msg.classList.add("text-success");
         msg.textContent = "Usuário cadastrado com sucesso! redirecionando para o login";
-        // redireciona para o login após 1,5s
         setTimeout(() => (window.location.href = "tela-login.html"), 1500);
       } else {
         msg.textContent = "⚠️ " + data.message;
@@ -114,14 +114,13 @@ if (logoutBtn) {
   });
 }
 
-// gerar imagem
+// GERAR IMAGEM
 if (gerarBtn) {
-  gerarBtn.addEventListener("click", () => {
+  gerarBtn.addEventListener("click", async () => {
     const materiaSelect = document.getElementById("materia");
     const temaSelect = document.getElementById("tema");
     const estiloSelect = document.getElementById("estilo");
     const promptField = document.getElementById("prompt");
-    const imgResultado = document.getElementById("imgResultado");
 
     if (!materiaSelect || !temaSelect || !promptField) return;
 
@@ -130,6 +129,7 @@ if (gerarBtn) {
     const estilo = estiloSelect ? estiloSelect.value : "";
     const prompt = promptField.value.trim();
 
+    // validações
     if (!materia || materia === "Selecione a matéria") {
       alert("Por favor, selecione a matéria.");
       return;
@@ -143,28 +143,144 @@ if (gerarBtn) {
       return;
     }
 
+    // desabilitar botão durante a geração
+    gerarBtn.disabled = true;
+    const originalBtnHtml = gerarBtn.innerHTML;
+    gerarBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando...';
+
+    // mostrar carregando
     resultado.classList.remove("d-none");
-    resultado.innerHTML = `<p>⏳ Gerando imagem para: "${prompt}"...</p>`;
+    resultado.innerHTML = `
+      <div class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="text-muted">🎨 Gerando imagem com IA...<br>Aguarde alguns segundos...</p>
+      </div>
+    `;
 
-    setTimeout(() => {
-      const seed = `${materia}-${tema}-${estilo}-${prompt}`;
-      const imgUrl = `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/400`;
+    try {
+      // construir o prompt completo
+      const fullPrompt = `Educational illustration for ${materia}, topic: ${tema}. ${prompt}. High quality, detailed, clear, professional educational material`;
 
-      resultado.innerHTML = `
-        <h5 class="fw-semibold mb-3">Resultado:</h5>
-        <img id="imgResultado" src="${imgUrl}" class="rounded-4 shadow-lg" alt="gerado" />
+      console.log('📤 Enviando requisição para gerar imagem...');
+      console.log('📝 Prompt:', fullPrompt);
+
+      // chamar a API
+      const response = await fetch(`${API_URL}/api/generate-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          negativePrompt: 'text, words, letters, low quality, blurry, distorted, ugly',
+          style: estilo !== 'Selecione o estilo' ? estilo : null
+        })
+      });
+
+      console.log('📥 Resposta recebida. Status:', response.status);
+
+      const data = await response.json();
+      console.log('📦 Dados recebidos:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao gerar imagem');
+      }
+
+      // mostrar imagem
+      const imgUrl = data.imageUrl;
+      console.log('🖼️ URL da imagem:', imgUrl);
+
+      // limpar e mostrar o resultado
+      resultado.innerHTML = '';
+      resultado.classList.remove('d-none');
+
+      // criar elementos
+      const title = document.createElement('h5');
+      title.className = 'fw-semibold mb-3 text-center';
+      title.textContent = '✅ Resultado:';
+
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'text-center mb-3';
+
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = 'Imagem gerada por IA';
+      img.className = 'rounded-4 shadow-lg img-fluid';
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
+
+      // eventos da imagem
+      img.onload = () => console.log('✅ Imagem carregada e exibida!');
+      img.onerror = () => {
+        console.error('❌ Erro ao carregar imagem');
+        imgContainer.innerHTML = `
+          <div class="alert alert-warning">
+            Erro ao carregar. <a href="${imgUrl}" target="_blank">Clique aqui para ver</a>
+          </div>
+        `;
+      };
+
+      imgContainer.appendChild(img);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.className = 'd-flex gap-3 justify-content-center flex-wrap';
+      btnContainer.innerHTML = `
+        <a href="${imgUrl}" target="_blank" download="gerai-imagem.png" class="btn btn-success">
+          <i class="bi bi-download me-2"></i>Baixar Imagem
+        </a>
+        <button onclick="window.location.reload()" class="btn btn-secondary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Gerar Nova
+        </button>
       `;
 
-      // salva no histórico
+      // adicionar tudo ao resultado
+      resultado.appendChild(title);
+      resultado.appendChild(imgContainer);
+      resultado.appendChild(btnContainer);
+
+      console.log('✅ Elementos criados e adicionados à página!');
+
+      // salvar no histórico
       const historico = JSON.parse(localStorage.getItem("historico")) || [];
-      historico.unshift(imgUrl);
+      historico.unshift({
+        url: imgUrl,
+        prompt: prompt,
+        materia: materia,
+        tema: tema,
+        data: new Date().toISOString()
+      });
+      if (historico.length > 50) historico.pop();
       localStorage.setItem("historico", JSON.stringify(historico));
-    }, 2000);
+
+      // scroll até o resultado
+      setTimeout(() => {
+        resultado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+
+    } catch (error) {
+      console.error('❌ Erro ao gerar imagem:', error);
+
+      // mostrar erro para o usuário
+      resultado.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Erro:</strong> ${error.message}
+          <br><small class="mt-2 d-block">Verifique se o servidor está rodando e tente novamente.</small>
+        </div>
+      `;
+    } finally {
+      // reabilitar botão
+      gerarBtn.disabled = false;
+      gerarBtn.innerHTML = originalBtnHtml;
+    }
   });
 }
 
 // Temas automáticos por matéria
-
 const temas = {
   fisica: ["Leis de Newton", "Eletromagnetismo", "Óptica", "Movimento Retilíneo"],
   quimica: ["Tabela Periódica", "Ligações Químicas", "Reações Orgânicas", "Atomística"],
@@ -196,10 +312,19 @@ if (historicoLista) {
   if (historico.length === 0) {
     historicoLista.innerHTML = `<p class="text-muted">Nenhuma imagem gerada ainda.</p>`;
   } else {
-    historico.forEach(img => {
+    historico.forEach(item => {
       const col = document.createElement("div");
       col.className = "col-md-4 mb-3";
-      col.innerHTML = `<img src="${img}" class="img-fluid rounded shadow">`;
+
+      const imgUrl = typeof item === 'object' ? item.url : item;
+      const prompt = typeof item === 'object' ? item.prompt : '';
+
+      col.innerHTML = `
+        <div class="card h-100">
+          <img src="${imgUrl}" class="card-img-top" alt="Imagem gerada" style="height: 200px; object-fit: cover;">
+          ${prompt ? `<div class="card-body"><p class="card-text small">${prompt}</p></div>` : ''}
+        </div>
+      `;
       historicoLista.appendChild(col);
     });
   }
@@ -216,4 +341,38 @@ document.addEventListener("DOMContentLoaded", function () {
       document.body.classList.toggle("sidebar-open");
     });
   }
+
+  // verificar status da API quando carrega a página de gerar
+  if (gerarBtn) {
+    checkAPIStatus();
+  }
 });
+
+// verificar se a API está funcionando
+async function checkAPIStatus() {
+  try {
+    const response = await fetch(`${API_URL}/api/status`);
+    const data = await response.json();
+
+    if (data.status === 'online') {
+      console.log('✅ Servidor conectado e funcionando');
+      console.log('🎨 API:', data.message);
+    }
+  } catch (error) {
+    console.error('❌ Erro ao conectar com servidor:', error);
+
+    const aviso = document.createElement('div');
+    aviso.className = 'alert alert-danger mt-3';
+    aviso.innerHTML = `
+      <i class="bi bi-x-circle me-2"></i>
+      <strong>Erro de conexão:</strong> Não foi possível conectar ao servidor. 
+      Verifique se ele está rodando em http://localhost:3000
+    `;
+
+    const container = document.querySelector('.welcome-box');
+    if (container && gerarBtn) {
+      container.insertBefore(aviso, container.firstChild);
+      gerarBtn.disabled = true;
+    }
+  }
+}
