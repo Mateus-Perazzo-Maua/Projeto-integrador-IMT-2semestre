@@ -52,7 +52,7 @@ body {
 .nav-link {
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 12px 16px;
   margin: 4px 12px;
   transition: all 0.3s ease;
@@ -92,6 +92,31 @@ body {
 .nav-link.active[href*="historico"] {
   background: linear-gradient(90deg, #FF9800 0%, #FFC107 100%);
   box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+/* botão de gerar imagem */
+#gerarBtn {
+  display: block;
+  margin: 20px auto 0 auto;
+}
+
+/* botão de logout */
+#logoutBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+#logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* botão toggle (abrir barra lateral) */
@@ -213,12 +238,6 @@ body.sidebar-open .menu-toggle {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
-}
-
-/* botão do logout */
-.btn-gradient.logout {
-  width: calc(100% - 24px);
-  margin: 12px;
 }
 
 /* formulários (cadastro e login) */
