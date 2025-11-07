@@ -167,17 +167,19 @@ if (gerarBtn) {
       console.log('📝 Prompt:', fullPrompt);
 
       // chamar a API
+      const email = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+
       const response = await fetch(`${API_URL}/api/generate-image`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           negativePrompt: 'text, words, letters, low quality, blurry, distorted, ugly',
-          style: estilo !== 'Selecione o estilo' ? estilo : null
+          style: estilo !== 'Selecione o estilo' ? estilo : null,
+          email // envia o e-mail do usuário logado para salvar no histórico
         })
       });
+
 
       console.log('📥 Resposta recebida. Status:', response.status);
 
@@ -245,16 +247,34 @@ if (gerarBtn) {
       console.log('✅ Elementos criados e adicionados à página!');
 
       // salvar no histórico
-      const historico = JSON.parse(localStorage.getItem("historico")) || [];
-      historico.unshift({
-        url: imgUrl,
-        prompt: prompt,
-        materia: materia,
-        tema: tema,
-        data: new Date().toISOString()
-      });
-      if (historico.length > 50) historico.pop();
-      localStorage.setItem("historico", JSON.stringify(historico));
+      const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+      if (usuario) {
+        const chaveHistorico = `historico_${usuario}`; // <-- chave única por usuário
+        const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
+      
+        historico.unshift({
+          url: imgUrl,
+          prompt: prompt,
+          materia: materia,
+          tema: tema,
+          data: new Date().toISOString()
+        });
+      
+        if (historico.length > 50) historico.pop();
+      
+        localStorage.setItem(chaveHistorico, JSON.stringify(historico));
+      
+        // salvar no banco (para histórico persistente)
+        fetch(`${API_URL}/api/save-history`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: usuario,
+            imageData: historico[0] // salva apenas a última imagem
+          })
+        }).catch(console.error);
+      }
+      
 
       // scroll até o resultado
       setTimeout(() => {
@@ -307,8 +327,10 @@ if (materiaSelect && temaSelect) {
 
 // HISTÓRICO DE IMAGENS
 if (historicoLista) {
-  const historico = JSON.parse(localStorage.getItem("historico")) || [];
-
+  const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+  const chaveHistorico = `historico_${usuario}`;
+  const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
+  
   historicoLista.innerHTML = "";
 
   if (historico.length === 0) {

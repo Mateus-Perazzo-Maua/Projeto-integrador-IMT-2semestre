@@ -70,6 +70,30 @@ app.post("/login", async (req, res) => {
   }
 });
 
+
+// Salvar histórico individual
+app.post("/api/save-history", async (req, res) => {
+  try {
+    const { email, imageData } = req.body;
+    if (!email || !imageData) {
+      return res.status(400).json({ error: "E-mail e dados da imagem são obrigatórios" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    await User.updateOne(
+      { email },
+      { $push: { history: imageData } }
+    );
+
+    res.json({ success: true, message: "Histórico salvo com sucesso" });
+  } catch (err) {
+    console.error("Erro ao salvar histórico:", err);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // GERAÇÃO
 
 const HF_API_KEY = process.env.HUGGING_FACE_API_KEY;
@@ -144,13 +168,36 @@ app.post('/api/generate-image', async (req, res) => {
 
             console.log(`✅ SUCESSO com ${model.split('/').pop()}!`);
 
+            // Salvar histórico no usuário logado
+            const { email } = req.body;
+            if (email) {
+              try {
+                await User.updateOne(
+                  { email },
+                  {
+                    $push: {
+                      history: {
+                        imageUrl,
+                        prompt: fullPrompt,
+                        date: new Date()
+                      }
+                    }
+                  }
+                );
+                console.log(` Histórico salvo com sucesso para ${email}`);
+              } catch (saveErr) {
+                console.error(" Erro ao salvar histórico:", saveErr.message);
+              }
+            }
+
             return res.json({
               success: true,
-              imageUrl: imageUrl,
+              imageUrl,
               prompt: fullPrompt,
               provider: 'HuggingFace',
               model: model
             });
+
           } else if (hfResponse.status === 503) {
             console.log(`⏳ Modelo ${model.split('/').pop()} carregando... (aguarde 30s e tente novamente)`);
           } else {
@@ -221,6 +268,23 @@ app.get('/api/status', (req, res) => {
       : 'Usando modo placeholder (configure HUGGING_FACE_API_KEY para IA real)'
   });
 });
+
+// 📜 Rota para retornar o histórico de imagens do usuário
+app.post("/api/history", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "E-mail é obrigatório" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    res.json({ success: true, history: user.history });
+  } catch (err) {
+    console.error("Erro ao buscar histórico:", err);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 
 // INICIAR SERVIDOR:
 
