@@ -51,9 +51,9 @@
           <div class="col-md-4">
             <div class="stat-card shadow-sm">
               <i class="bi bi-image text-primary fs-3 mb-2"></i>
-              <h4>48</h4>
+              <h4 id="total-imagens">48</h4>
               <p>Imagens Geradas</p>
-            </div>
+            </div>            
           </div>
           <div class="col-md-4">
             <div class="stat-card shadow-sm">
@@ -76,6 +76,35 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
+  <script>
+    async function atualizarEstatisticas() {
+      try {
+        const email = localStorage.getItem("email"); // pega o email do login
+        if (!email) return; // se não estiver logado, sai
+  
+        const response = await fetch("http://localhost:3000/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+  
+        const data = await response.json();
+  
+        if (data.success) {
+          const totalImagens = data.history.length;
+          const estatisticaImagens = document.getElementById("total-imagens");
+          estatisticaImagens.textContent = totalImagens;
+  
+          console.log(`Imagens geradas: ${totalImagens}`);
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar estatísticas:", error);
+      }
+    }
+  
+    // Atualiza ao carregar a página
+    document.addEventListener("DOMContentLoaded", atualizarEstatisticas);
+  </script>  
 </body>
 
 </html>

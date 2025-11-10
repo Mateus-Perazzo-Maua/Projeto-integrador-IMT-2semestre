@@ -433,3 +433,81 @@ async function checkAPIStatus() {
     }
   }
 }
+
+// Adicione este código no final do script.js
+
+// ESTATÍSTICAS DA HOME
+function carregarEstatisticas() {
+  const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+  
+  if (!usuario) return;
+  
+  const chaveHistorico = `historico_${usuario}`;
+  const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
+  
+  // Calcular estatísticas
+  const totalImagens = historico.length;
+  
+  // Calcular tempo médio (simulado baseado em dados reais se disponível)
+  const tempoMedio = totalImagens > 0 ? "8-15s" : "0s";
+  
+  // Encontrar tema mais popular
+  const temasMapa = {};
+  historico.forEach(item => {
+    const tema = item.tema || "Desconhecido";
+    temasMapa[tema] = (temasMapa[tema] || 0) + 1;
+  });
+  
+  let temaPopular = "Nenhum";
+  let maxCount = 0;
+  
+  for (const [tema, count] of Object.entries(temasMapa)) {
+    if (count > maxCount) {
+      maxCount = count;
+      temaPopular = tema;
+    }
+  }
+  
+  // Atualizar DOM
+  atualizarEstatisticasDOM(totalImagens, tempoMedio, temaPopular);
+}
+
+function atualizarEstatisticasDOM(total, tempo, tema) {
+  // Seletor para os cards de estatísticas
+  const statCards = document.querySelectorAll('.stat-card h4');
+  
+  if (statCards.length >= 3) {
+    // Atualizar total de imagens
+    statCards[0].textContent = total;
+    
+    // Atualizar tempo médio
+    statCards[1].textContent = tempo;
+    
+    // Atualizar tema popular
+    statCards[2].textContent = `"${tema}"`;
+  }
+}
+
+// Carregar estatísticas quando a página home carregar
+document.addEventListener("DOMContentLoaded", function() {
+  const paginaAtual = window.location.pathname.split("/").pop();
+  
+  if (paginaAtual === "home.html") {
+    carregarEstatisticas();
+    
+    // Adicionar animação de entrada nas estatísticas
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+      setTimeout(() => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 50);
+      }, index * 100);
+    });
+  }
+});
