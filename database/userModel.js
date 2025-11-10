@@ -9,11 +9,16 @@ const userSchema = new mongoose.Schema({
     required: true,
     match: /@(sistemapoliedro\.com\.br|p4ed\.com)$/i
   },
-  password: { type: String, required: true }
-});
+  password: { type: String, required: true },
+  history: [{
+    imageUrl: String,
+    prompt: String,
+    materia: String,
+    tema: String,
+    date: { type: Date, default: Date.now }
+  }]
+}, { timestamps: true });
 
-
-// Aqui criamos e atribuimos o modelo à variável User
 const User = mongoose.model("User", userSchema);
 
 // Funções CRUD
@@ -49,6 +54,29 @@ async function deleteUser(id) {
   return result.deletedCount;
 }
 
+// adiciona item ao histórico
+async function addToHistory(email, imageData) {
+  const result = await User.updateOne(
+    { email },
+    { 
+      $push: { 
+        history: {
+          $each: [imageData],
+          $position: 0,
+          $slice: 50
+        }
+      }
+    }
+  );
+  return result.modifiedCount;
+}
+
+// obter histórico do usuário
+async function getUserHistory(email) {
+  const user = await User.findOne({ email }).select('history');
+  return user ? user.history : [];
+}
+
 // Exporta tudo
 module.exports = {
   User,
@@ -59,4 +87,6 @@ module.exports = {
   addUser,
   updateUser,
   deleteUser,
+  addToHistory,
+  getUserHistory
 };
