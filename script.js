@@ -434,8 +434,6 @@ async function checkAPIStatus() {
   }
 }
 
-// Adicione este código no final do script.js
-
 // ESTATÍSTICAS DA HOME
 function carregarEstatisticas() {
   const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
@@ -448,7 +446,7 @@ function carregarEstatisticas() {
   // Calcular estatísticas
   const totalImagens = historico.length;
   
-  // Calcular tempo médio (simulado baseado em dados reais se disponível)
+  // Calcular tempo médio
   const tempoMedio = totalImagens > 0 ? "8-15s" : "0s";
   
   // Encontrar tema mais popular
@@ -511,3 +509,32 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 });
+
+// atualiza as estatísticas na home
+async function atualizarEstatisticas() {
+      try {
+        const email = localStorage.getItem("email"); // pega o email do login
+        if (!email) return; // se não estiver logado, sai
+  
+        const response = await fetch("http://localhost:3000/api/history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+  
+        const data = await response.json();
+  
+        if (data.success) {
+          const totalImagens = data.history.length;
+          const estatisticaImagens = document.getElementById("total-imagens");
+          estatisticaImagens.textContent = totalImagens;
+  
+          console.log(`Imagens geradas: ${totalImagens}`);
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar estatísticas:", error);
+      }
+    }
+  
+    // atualiza ao carregar a página
+    document.addEventListener("DOMContentLoaded", atualizarEstatisticas);

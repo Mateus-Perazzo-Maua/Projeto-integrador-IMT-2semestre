@@ -285,7 +285,7 @@ app.post("/api/history", async (req, res) => {
   }
 });
 
-// ====== ESTATÍSTICAS ======
+// ESTATÍSTICAS
 app.post("/api/stats", async (req, res) => {
   try {
     const { email } = req.body;

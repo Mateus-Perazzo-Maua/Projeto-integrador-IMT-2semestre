@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-// Aqui criamos e atribuimos o modelo à variável User
 const User = mongoose.model("User", userSchema);
 
 // Funções CRUD
@@ -55,7 +54,7 @@ async function deleteUser(id) {
   return result.deletedCount;
 }
 
-// Nova função para adicionar item ao histórico
+// adiciona item ao histórico
 async function addToHistory(email, imageData) {
   const result = await User.updateOne(
     { email },
@@ -63,8 +62,8 @@ async function addToHistory(email, imageData) {
       $push: { 
         history: {
           $each: [imageData],
-          $position: 0, // Adiciona no início
-          $slice: 50 // Mantém apenas os 50 mais recentes
+          $position: 0,
+          $slice: 50
         }
       }
     }
@@ -72,7 +71,7 @@ async function addToHistory(email, imageData) {
   return result.modifiedCount;
 }
 
-// Nova função para obter histórico do usuário
+// obter histórico do usuário
 async function getUserHistory(email) {
   const user = await User.findOne({ email }).select('history');
   return user ? user.history : [];
