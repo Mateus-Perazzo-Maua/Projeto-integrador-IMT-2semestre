@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname)));
 // Conecta ao banco
 connectDB();
 
-///// AUTENTICAÇÃO \\\\\
+// AUTENTICAÇÃO
 
 // Rota de registro
 app.post("/register", async (req, res) => {
@@ -70,30 +70,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
-// Salvar histórico individual
-app.post("/api/save-history", async (req, res) => {
-  try {
-    const { email, imageData } = req.body;
-    if (!email || !imageData) {
-      return res.status(400).json({ error: "E-mail e dados da imagem são obrigatórios" });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
-
-    await User.updateOne(
-      { email },
-      { $push: { history: imageData } }
-    );
-
-    res.json({ success: true, message: "Histórico salvo com sucesso" });
-  } catch (err) {
-    console.error("Erro ao salvar histórico:", err);
-    res.status(500).json({ error: "Erro interno do servidor" });
-  }
-});
-
 // GERAÇÃO
 
 const HF_API_KEY = process.env.HUGGING_FACE_API_KEY;
@@ -104,7 +80,7 @@ const HF_MODELS = [
 ];
 
 async function tryHuggingFace(prompt, modelUrl) {
-  console.log(` Tentando modelo: ${modelUrl.split('/').pop()}...`);
+  console.log(`🔄 Tentando modelo: ${modelUrl.split('/').pop()}...`);
 
   const response = await axios({
     method: 'POST',
@@ -142,8 +118,8 @@ app.post('/api/generate-image', async (req, res) => {
       });
     }
 
-    console.log(' Gerando imagem com prompt:', prompt);
-    if (style) console.log(' Estilo aplicado:', style);
+    console.log('🎨 Gerando imagem com prompt:', prompt);
+    if (style) console.log('🎭 Estilo aplicado:', style);
 
     // construir o prompt
     let fullPrompt = prompt;
@@ -155,7 +131,7 @@ app.post('/api/generate-image', async (req, res) => {
 
     // tentativa 1 (hugging face)
     if (HF_API_KEY) {
-      console.log(' Tentando Hugging Face API...');
+      console.log('📤 Tentando Hugging Face API...');
 
       for (const model of HF_MODELS) {
         try {
@@ -166,42 +142,19 @@ app.post('/api/generate-image', async (req, res) => {
             const imageBase64 = Buffer.from(hfResponse.data, 'binary').toString('base64');
             const imageUrl = `data:image/png;base64,${imageBase64}`;
 
-            console.log(` SUCESSO com ${model.split('/').pop()}!`);
-
-            // Salvar histórico no usuário logado
-            const { email } = req.body;
-            if (email) {
-              try {
-                await User.updateOne(
-                  { email },
-                  {
-                    $push: {
-                      history: {
-                        imageUrl,
-                        prompt: fullPrompt,
-                        date: new Date()
-                      }
-                    }
-                  }
-                );
-                console.log(` Histórico salvo com sucesso para ${email}`);
-              } catch (saveErr) {
-                console.error(" Erro ao salvar histórico:", saveErr.message);
-              }
-            }
+            console.log(`✅ SUCESSO com ${model.split('/').pop()}!`);
 
             return res.json({
               success: true,
-              imageUrl,
+              imageUrl: imageUrl,
               prompt: fullPrompt,
               provider: 'HuggingFace',
               model: model
             });
-
           } else if (hfResponse.status === 503) {
-            console.log(` Modelo ${model.split('/').pop()} carregando... (aguarde 30s e tente novamente)`);
+            console.log(`⏳ Modelo ${model.split('/').pop()} carregando... (aguarde 30s e tente novamente)`);
           } else {
-            console.log(` ${model.split('/').pop()}: Status ${hfResponse.status}`);
+            console.log(`⚠️ ${model.split('/').pop()}: Status ${hfResponse.status}`);
           }
 
         } catch (modelError) {
@@ -209,7 +162,7 @@ app.post('/api/generate-image', async (req, res) => {
           const modelName = model.split('/').pop();
 
           if (status === 503) {
-            console.log(` ${modelName} está carregando...`);
+            console.log(`⏳ ${modelName} está carregando...`);
             // Retornar erro 503 pro usuário aguardar
             return res.status(503).json({
               error: `Modelo está inicializando. Aguarde 30 segundos e tente novamente.`,
@@ -217,30 +170,30 @@ app.post('/api/generate-image', async (req, res) => {
               model: modelName
             });
           } else if (status === 401 || status === 403) {
-            console.log(` ${modelName} requer autenticação especial`);
+            console.log(`🔒 ${modelName} requer autenticação especial`);
           } else if (status === 410) {
-            console.log(` ${modelName} não está mais disponível`);
+            console.log(`❌ ${modelName} não está mais disponível`);
           } else {
-            console.log(` ${modelName} falhou:`, modelError.message);
+            console.log(`⚠️ ${modelName} falhou:`, modelError.message);
           }
 
           continue; // Próximo modelo
         }
       }
 
-      console.log(' Nenhum modelo do Hugging Face funcionou, usando Pollinations...');
+      console.log('⚠️ Nenhum modelo do Hugging Face funcionou, usando Pollinations...');
     } else {
-      console.log(' Token do Hugging Face não configurado (configure para melhor qualidade)');
+      console.log('⚠️ Token do Hugging Face não configurado (configure para melhor qualidade)');
     }
 
     // tentativa 2 (pollinations)
-    console.log(' Usando Pollinations.ai...');
+    console.log('🔄 Usando Pollinations.ai...');
 
     const encodedPrompt = encodeURIComponent(fullPrompt);
     const seed = Date.now();
     const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`;
 
-    console.log(' URL gerada com Pollinations!');
+    console.log('✅ URL gerada com Pollinations!');
 
     res.json({
       success: true,
@@ -250,7 +203,7 @@ app.post('/api/generate-image', async (req, res) => {
     });
 
   } catch (error) {
-    console.error(' Erro geral:', error.message);
+    console.error('❌ Erro geral:', error.message);
     res.status(500).json({
       error: 'Erro ao gerar imagem.',
       details: error.message
@@ -269,72 +222,10 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Rota para retornar o histórico de imagens do usuário
-app.post("/api/history", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "E-mail é obrigatório" });
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
-
-    res.json({ success: true, history: user.history });
-  } catch (err) {
-    console.error("Erro ao buscar histórico:", err);
-    res.status(500).json({ error: "Erro interno do servidor" });
-  }
-});
-
-// ESTATÍSTICAS
-app.post("/api/stats", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "E-mail é obrigatório." });
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado." });
-
-    const history = user.history || [];
-
-    // Total de imagens
-    const totalImages = history.length;
-
-    // Tempo médio simulado (exemplo)
-    const avgTime = totalImages > 0 ? (Math.random() * 10 + 5).toFixed(1) : 0;
-
-    // Palavra mais comum dos prompts
-    let wordCount = {};
-    history.forEach(entry => {
-      if (entry.prompt) {
-        const words = entry.prompt.toLowerCase().split(/\s+/);
-        words.forEach(word => {
-          if (word.length > 3) {
-            wordCount[word] = (wordCount[word] || 0) + 1;
-          }
-        });
-      }
-    });
-    const popularWord = Object.keys(wordCount).length > 0
-      ? Object.entries(wordCount).sort((a, b) => b[1] - a[1])[0][0]
-      : "Nenhum";
-
-    res.json({
-      success: true,
-      totalImages,
-      avgTime,
-      popularWord
-    });
-  } catch (err) {
-    console.error("Erro ao gerar estatísticas:", err);
-    res.status(500).json({ success: false, message: "Erro interno no servidor." });
-  }
-});
-
-
 // INICIAR SERVIDOR:
 
 app.listen(PORT, () => {
   console.log(`👿 Servidor rodando em http://localhost:${PORT}`);
   console.log(`🎨 API de geração de imagens: ${HF_API_KEY ? 'Hugging Face' : 'Placeholder'}`);
-  console.log(` Tudo pronto para gerar imagens!`);
+  console.log(`✅ Tudo pronto para gerar imagens!`);
 });
