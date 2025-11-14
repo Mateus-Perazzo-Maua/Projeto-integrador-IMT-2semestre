@@ -5,6 +5,8 @@ const cors = require("cors");
 const axios = require("axios");
 const connectDB = require("./database/connection");
 const { User } = require("./database/userModel");
+const bcrypt = require("bcrypt");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,7 +36,9 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Usuário ou e-mail já cadastrado!" });
     }
 
-    const newUser = new User({ username, email, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, email, password: hashedPassword });
+
     await newUser.save();
 
     res.status(201).json({ message: "Usuário cadastrado com sucesso!" });
@@ -59,9 +63,11 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "E-mail não encontrado" });
     }
 
-    if (user.password !== password) {
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({ message: "Senha incorreta" });
     }
+
 
     res.status(200).json({ message: "Login realizado com sucesso!" });
   } catch (err) {
@@ -76,19 +82,19 @@ app.post("/login", async (req, res) => {
 app.post("/api/user-info", async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({ success: false, message: "E-mail é obrigatório" });
     }
 
     const user = await User.findOne({ email }).select('-password');
-    
+
     if (!user) {
       return res.status(404).json({ success: false, message: "Usuário não encontrado" });
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       user: {
         username: user.username,
         email: user.email,
@@ -112,7 +118,7 @@ app.put("/api/update-user", async (req, res) => {
 
     // verificar se o novo username já existe (menos pro próprio usuário)
     const existingUser = await User.findOne({ username, email: { $ne: email } });
-    
+
     if (existingUser) {
       return res.status(400).json({ success: false, message: "Este nome de usuário já está em uso" });
     }
@@ -149,15 +155,20 @@ app.put("/api/update-password", async (req, res) => {
     }
 
     // Verificar se a senha atual está correta
-    if (user.password !== currentPassword) {
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({ success: false, message: "Senha atual incorreta" });
     }
 
-    // Atualizar senha
+    // Gerar hash da nova senha
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar senha no banco
     const result = await User.updateOne(
       { email },
-      { $set: { password: newPassword } }
+      { $set: { password: newHashedPassword } }
     );
+
 
     if (result.modifiedCount === 0) {
       return res.status(500).json({ success: false, message: "Erro ao atualizar senha" });
@@ -467,23 +478,23 @@ app.post("/api/stats", async (req, res) => {
 app.post("/api/user-profile", async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "E-mail é obrigatório" 
+      return res.status(400).json({
+        success: false,
+        message: "E-mail é obrigatório"
       });
     }
 
     console.log("🔍 Buscando perfil para:", email);
 
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       console.log("Usuário não encontrado:", email);
-      return res.status(404).json({ 
-        success: false, 
-        message: "Usuário não encontrado" 
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado"
       });
     }
 
@@ -501,8 +512,8 @@ app.post("/api/user-profile", async (req, res) => {
 
   } catch (err) {
     console.error("Erro ao buscar perfil:", err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: "Erro interno do servidor",
       error: err.message
     });
