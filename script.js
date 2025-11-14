@@ -13,7 +13,7 @@ const API_URL = 'http://localhost:3000';
 // carregar perfil na barra lateral
 function carregarPerfilSidebar() {
   const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
-  
+
   if (!usuario) {
     console.log("Usuário não está logado");
     return;
@@ -27,40 +27,40 @@ function carregarPerfilSidebar() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: usuario })
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Atualizar nome do usuário
-      const usernameElement = document.getElementById("sidebar-username");
-      if (usernameElement) {
-        usernameElement.textContent = data.user.username || "Usuário";
-      }
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Atualizar nome do usuário
+        const usernameElement = document.getElementById("sidebar-username");
+        if (usernameElement) {
+          usernameElement.textContent = data.user.username || "Usuário";
+        }
 
-      // Atualizar email
+        // Atualizar email
+        const emailElement = document.getElementById("sidebar-email");
+        if (emailElement) {
+          emailElement.textContent = usuario;
+        }
+
+        console.log("Perfil carregado:", data.user.username);
+      } else {
+        console.log("Erro ao carregar perfil:", data.message);
+        // Mostrar apenas email como fallback
+        const emailElement = document.getElementById("sidebar-email");
+        if (emailElement) {
+          emailElement.textContent = usuario;
+        }
+      }
+    })
+    .catch(err => {
+      console.error("Erro ao buscar perfil:", err);
+
+      // fallback: mostrar apenas o email
       const emailElement = document.getElementById("sidebar-email");
       if (emailElement) {
         emailElement.textContent = usuario;
       }
-
-      console.log("Perfil carregado:", data.user.username);
-    } else {
-      console.log("Erro ao carregar perfil:", data.message);
-      // Mostrar apenas email como fallback
-      const emailElement = document.getElementById("sidebar-email");
-      if (emailElement) {
-        emailElement.textContent = usuario;
-      }
-    }
-  })
-  .catch(err => {
-    console.error("Erro ao buscar perfil:", err);
-    
-    // fallback: mostrar apenas o email
-    const emailElement = document.getElementById("sidebar-email");
-    if (emailElement) {
-      emailElement.textContent = usuario;
-    }
-  });
+    });
 }
 
 // login
@@ -277,14 +277,45 @@ if (gerarBtn) {
 
       const btnContainer = document.createElement('div');
       btnContainer.className = 'd-flex gap-3 justify-content-center flex-wrap';
-      btnContainer.innerHTML = `
-        <a href="${imgUrl}" target="_blank" download="gerai-imagem.png" class="btn btn-success">
-          <i class="bi bi-download me-2"></i>Baixar Imagem
-        </a>
-        <button onclick="window.location.reload()" class="btn btn-secondary">
-          <i class="bi bi-arrow-clockwise me-2"></i>Gerar Nova
-        </button>
-      `;
+
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'btn btn-success';
+      downloadBtn.innerHTML = '<i class="bi bi-download me-2"></i>Baixar Imagem';
+      downloadBtn.onclick = async () => {
+        try {
+          downloadBtn.disabled = true;
+          downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Baixando...';
+
+          const response = await fetch(imgUrl);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `gerai-${materia}-${tema}-${Date.now()}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          window.URL.revokeObjectURL(url);
+
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = '<i class="bi bi-download me-2"></i>Baixar Imagem';
+        } catch (error) {
+          console.error('Erro ao baixar:', error);
+          alert('Erro ao baixar a imagem. Tente novamente.');
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = '<i class="bi bi-download me-2"></i>Baixar Imagem';
+        }
+      };
+
+      const novaBtn = document.createElement('button');
+      novaBtn.className = 'btn btn-secondary';
+      novaBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Gerar Nova';
+      novaBtn.onclick = () => window.location.reload();
+
+      btnContainer.appendChild(downloadBtn);
+      btnContainer.appendChild(novaBtn);
 
       resultado.appendChild(title);
       resultado.appendChild(imgContainer);
@@ -297,7 +328,7 @@ if (gerarBtn) {
       if (usuario) {
         const chaveHistorico = `historico_${usuario}`;
         const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
-      
+
         historico.unshift({
           url: imgUrl,
           prompt: prompt,
@@ -305,11 +336,11 @@ if (gerarBtn) {
           tema: tema,
           data: new Date().toISOString()
         });
-      
+
         if (historico.length > 50) historico.pop();
-      
+
         localStorage.setItem(chaveHistorico, JSON.stringify(historico));
-      
+
         fetch(`${API_URL}/api/save-history`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -372,7 +403,7 @@ if (historicoLista) {
   const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
   const chaveHistorico = `historico_${usuario}`;
   const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
-  
+
   historicoLista.innerHTML = "";
 
   if (historico.length === 0) {
@@ -414,9 +445,6 @@ if (historicoLista) {
         <a href="${url}" target="_blank" class="btn btn-outline-primary btn-sm">
           <i class="bi bi-eye me-1"></i> Ver
         </a>
-        <a href="${url}" download="imagem-gerada.png" class="btn btn-success btn-sm ms-2">
-          <i class="bi bi-download me-1"></i> Baixar
-        </a>
       `;
 
       card.appendChild(img);
@@ -443,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Carregar perfil do usuário na sidebar
   const paginasComPerfil = ["home.html", "tela-gerar.html", "historico.html", "perfil.html"];
   const paginaAtual = window.location.pathname.split("/").pop();
-  
+
   if (paginasComPerfil.includes(paginaAtual)) {
     carregarPerfilSidebar();
   }
@@ -491,37 +519,37 @@ async function checkAPIStatus() {
 // ESTATÍSTICAS DA HOME
 function carregarEstatisticas() {
   const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
-  
+
   if (!usuario) return;
-  
+
   const chaveHistorico = `historico_${usuario}`;
   const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
-  
+
   const totalImagens = historico.length;
   const tempoMedio = totalImagens > 0 ? "8-15s" : "0s";
-  
+
   const temasMapa = {};
   historico.forEach(item => {
     const tema = item.tema || "Desconhecido";
     temasMapa[tema] = (temasMapa[tema] || 0) + 1;
   });
-  
+
   let temaPopular = "Nenhum";
   let maxCount = 0;
-  
+
   for (const [tema, count] of Object.entries(temasMapa)) {
     if (count > maxCount) {
       maxCount = count;
       temaPopular = tema;
     }
   }
-  
+
   atualizarEstatisticasDOM(totalImagens, tempoMedio, temaPopular);
 }
 
 function atualizarEstatisticasDOM(total, tempo, tema) {
   const statCards = document.querySelectorAll('.stat-card h4');
-  
+
   if (statCards.length >= 3) {
     statCards[0].textContent = total;
     statCards[1].textContent = tempo;
