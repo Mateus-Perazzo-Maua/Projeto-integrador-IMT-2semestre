@@ -70,6 +70,139 @@ app.post("/login", async (req, res) => {
   }
 });
 
+///// PERFIL DO USUÁRIO \\\\\
+
+// Obter informações do usuário
+app.post("/api/user-info", async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: "E-mail é obrigatório" });
+    }
+
+    const user = await User.findOne({ email }).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuário não encontrado" });
+    }
+
+    res.json({ 
+      success: true, 
+      user: {
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (err) {
+    console.error("Erro ao buscar usuário:", err);
+    res.status(500).json({ success: false, message: "Erro interno do servidor" });
+  }
+});
+
+// Atualizar informações do usuário
+app.put("/api/update-user", async (req, res) => {
+  try {
+    const { email, username } = req.body;
+
+    if (!email || !username) {
+      return res.status(400).json({ success: false, message: "E-mail e nome de usuário são obrigatórios" });
+    }
+
+    // verificar se o novo username já existe (menos pro próprio usuário)
+    const existingUser = await User.findOne({ username, email: { $ne: email } });
+    
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "Este nome de usuário já está em uso" });
+    }
+
+    const result = await User.updateOne(
+      { email },
+      { $set: { username } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ success: false, message: "Usuário não encontrado ou nenhuma alteração feita" });
+    }
+
+    res.json({ success: true, message: "Informações atualizadas com sucesso" });
+  } catch (err) {
+    console.error("Erro ao atualizar usuário:", err);
+    res.status(500).json({ success: false, message: "Erro interno do servidor" });
+  }
+});
+
+// atualizar senha
+app.put("/api/update-password", async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: "Todos os campos são obrigatórios" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuário não encontrado" });
+    }
+
+    // Verificar se a senha atual está correta
+    if (user.password !== currentPassword) {
+      return res.status(401).json({ success: false, message: "Senha atual incorreta" });
+    }
+
+    // Atualizar senha
+    const result = await User.updateOne(
+      { email },
+      { $set: { password: newPassword } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(500).json({ success: false, message: "Erro ao atualizar senha" });
+    }
+
+    res.json({ success: true, message: "Senha atualizada com sucesso" });
+  } catch (err) {
+    console.error("Erro ao atualizar senha:", err);
+    res.status(500).json({ success: false, message: "Erro interno do servidor" });
+  }
+});
+
+// Excluir conta
+app.delete("/api/delete-account", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "E-mail e senha são obrigatórios" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuário não encontrado" });
+    }
+
+    // Verificar senha
+    if (user.password !== password) {
+      return res.status(401).json({ success: false, message: "Senha incorreta" });
+    }
+
+    // Excluir usuário
+    const result = await User.deleteOne({ email });
+
+    if (result.deletedCount === 0) {
+      return res.status(500).json({ success: false, message: "Erro ao excluir conta" });
+    }
+
+    res.json({ success: true, message: "Conta excluída com sucesso" });
+  } catch (err) {
+    console.error("Erro ao excluir conta:", err);
+    res.status(500).json({ success: false, message: "Erro interno do servidor" });
+  }
+});
 
 // Salvar histórico individual
 app.post("/api/save-history", async (req, res) => {
@@ -104,7 +237,7 @@ const HF_MODELS = [
 ];
 
 async function tryHuggingFace(prompt, modelUrl) {
-  console.log(` Tentando modelo: ${modelUrl.split('/').pop()}...`);
+  console.log(`Tentando modelo: ${modelUrl.split('/').pop()}...`);
 
   const response = await axios({
     method: 'POST',
@@ -142,8 +275,8 @@ app.post('/api/generate-image', async (req, res) => {
       });
     }
 
-    console.log(' Gerando imagem com prompt:', prompt);
-    if (style) console.log(' Estilo aplicado:', style);
+    console.log('Gerando imagem com prompt:', prompt);
+    if (style) console.log('Estilo aplicado:', style);
 
     // construir o prompt
     let fullPrompt = prompt;
@@ -155,7 +288,7 @@ app.post('/api/generate-image', async (req, res) => {
 
     // tentativa 1 (hugging face)
     if (HF_API_KEY) {
-      console.log(' Tentando Hugging Face API...');
+      console.log('Tentando Hugging Face API...');
 
       for (const model of HF_MODELS) {
         try {
@@ -166,7 +299,7 @@ app.post('/api/generate-image', async (req, res) => {
             const imageBase64 = Buffer.from(hfResponse.data, 'binary').toString('base64');
             const imageUrl = `data:image/png;base64,${imageBase64}`;
 
-            console.log(` SUCESSO com ${model.split('/').pop()}!`);
+            console.log(`SUCESSO com ${model.split('/').pop()}!`);
 
             // Salvar histórico no usuário logado
             const { email } = req.body;
@@ -184,9 +317,9 @@ app.post('/api/generate-image', async (req, res) => {
                     }
                   }
                 );
-                console.log(` Histórico salvo com sucesso para ${email}`);
+                console.log(`Histórico salvo com sucesso para ${email}`);
               } catch (saveErr) {
-                console.error(" Erro ao salvar histórico:", saveErr.message);
+                console.error("Erro ao salvar histórico:", saveErr.message);
               }
             }
 
@@ -199,9 +332,9 @@ app.post('/api/generate-image', async (req, res) => {
             });
 
           } else if (hfResponse.status === 503) {
-            console.log(` Modelo ${model.split('/').pop()} carregando... (aguarde 30s e tente novamente)`);
+            console.log(`Modelo ${model.split('/').pop()} carregando... (aguarde 30s e tente novamente)`);
           } else {
-            console.log(` ${model.split('/').pop()}: Status ${hfResponse.status}`);
+            console.log(`${model.split('/').pop()}: Status ${hfResponse.status}`);
           }
 
         } catch (modelError) {
@@ -209,7 +342,7 @@ app.post('/api/generate-image', async (req, res) => {
           const modelName = model.split('/').pop();
 
           if (status === 503) {
-            console.log(` ${modelName} está carregando...`);
+            console.log(`${modelName} está carregando...`);
             // Retornar erro 503 pro usuário aguardar
             return res.status(503).json({
               error: `Modelo está inicializando. Aguarde 30 segundos e tente novamente.`,
@@ -217,30 +350,30 @@ app.post('/api/generate-image', async (req, res) => {
               model: modelName
             });
           } else if (status === 401 || status === 403) {
-            console.log(` ${modelName} requer autenticação especial`);
+            console.log(`${modelName} requer autenticação especial`);
           } else if (status === 410) {
-            console.log(` ${modelName} não está mais disponível`);
+            console.log(`${modelName} não está mais disponível`);
           } else {
-            console.log(` ${modelName} falhou:`, modelError.message);
+            console.log(`${modelName} falhou:`, modelError.message);
           }
 
           continue; // Próximo modelo
         }
       }
 
-      console.log(' Nenhum modelo do Hugging Face funcionou, usando Pollinations...');
+      console.log('Nenhum modelo do Hugging Face funcionou, usando Pollinations...');
     } else {
-      console.log(' Token do Hugging Face não configurado (configure para melhor qualidade)');
+      console.log('Token do Hugging Face não configurado (configure para melhor qualidade)');
     }
 
     // tentativa 2 (pollinations)
-    console.log(' Usando Pollinations.ai...');
+    console.log('Usando Pollinations.ai...');
 
     const encodedPrompt = encodeURIComponent(fullPrompt);
     const seed = Date.now();
     const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`;
 
-    console.log(' URL gerada com Pollinations!');
+    console.log('URL gerada com Pollinations!');
 
     res.json({
       success: true,
@@ -250,7 +383,7 @@ app.post('/api/generate-image', async (req, res) => {
     });
 
   } catch (error) {
-    console.error(' Erro geral:', error.message);
+    console.error('Erro geral:', error.message);
     res.status(500).json({
       error: 'Erro ao gerar imagem.',
       details: error.message
@@ -330,11 +463,55 @@ app.post("/api/stats", async (req, res) => {
   }
 });
 
+// buscar perfil do usuário
+app.post("/api/user-profile", async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "E-mail é obrigatório" 
+      });
+    }
 
+    console.log("🔍 Buscando perfil para:", email);
+
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      console.log("Usuário não encontrado:", email);
+      return res.status(404).json({ 
+        success: false, 
+        message: "Usuário não encontrado" 
+      });
+    }
+
+    console.log("Perfil encontrado:", user.username);
+
+    // retornar dados necessários
+    res.json({
+      success: true,
+      user: {
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt || new Date()
+      }
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar perfil:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Erro interno do servidor",
+      error: err.message
+    });
+  }
+});
 // INICIAR SERVIDOR:
 
 app.listen(PORT, () => {
   console.log(`👿 Servidor rodando em http://localhost:${PORT}`);
   console.log(`🎨 API de geração de imagens: ${HF_API_KEY ? 'Hugging Face' : 'Placeholder'}`);
-  console.log(` Tudo pronto para gerar imagens!`);
+  console.log(`✅ Tudo pronto para gerar imagens!`);
 });
