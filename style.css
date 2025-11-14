@@ -545,3 +545,175 @@ textarea {
     padding: 30px 20px;
   }
 }
+
+/* ========================================
+   PERFIL DO USUÁRIO NA SIDEBAR
+   ======================================== */
+
+   .user-profile-sidebar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    margin-top: 8px;
+  }
+  
+  .user-profile-link {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+  }
+  
+  .user-profile-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--poliedro-cyan);
+    transition: all 0.3s ease;
+  }
+  
+  .user-profile-link:hover .user-avatar {
+    color: var(--white);
+    transform: scale(1.05);
+  }
+  
+  .user-info {
+    flex: 1;
+    overflow: hidden;
+    text-align: left;
+  }
+  
+  .user-info .fw-semibold {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--white);
+    margin-bottom: 2px;
+  }
+  
+  .user-info small {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    opacity: 0.7;
+  }
+  
+  /* Link ativo do perfil no menu */
+  .nav-link.active[href="perfil.html"],
+  .nav-link.active[href*="perfil"] {
+    background: linear-gradient(90deg, #9C27B0 0%, #7B1FA2 100%);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+  }
+  
+  /* Responsividade do perfil */
+  @media (max-width: 992px) {
+    .user-profile-sidebar {
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+  
+    .user-profile-link {
+      padding: 10px !important;
+    }
+  
+    .user-avatar {
+      margin-right: 8px !important;
+    }
+  
+    .user-avatar i {
+      font-size: 1.5rem !important;
+    }
+  
+    .user-info .fw-semibold {
+      font-size: 0.85rem;
+    }
+  
+    .user-info small {
+      font-size: 0.7rem;
+    }
+  }
+  
+  /* ========================================
+     PÁGINA DE PERFIL
+     ======================================== */
+  
+  .profile-section {
+    background: rgba(29, 186, 205, 0.03);
+    border: 1px solid rgba(29, 186, 205, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+  }
+  
+  .profile-section:hover {
+    border-color: rgba(29, 186, 205, 0.2);
+    box-shadow: 0 4px 12px rgba(29, 186, 205, 0.08);
+  }
+  
+  .danger-zone {
+    background: rgba(220, 38, 38, 0.03);
+    border-color: rgba(220, 38, 38, 0.2);
+  }
+  
+  .danger-zone:hover {
+    border-color: rgba(220, 38, 38, 0.3);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+  }
+  
+  /* Botões do perfil */
+  .profile-section .btn-gradient {
+    min-width: 180px;
+  }
+  
+  .danger-zone .btn-danger {
+    min-width: 200px;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .danger-zone .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+  }
+  
+  /* Modal de confirmação */
+  .modal-content {
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Animação de entrada do perfil */
+  @keyframes fadeInProfile {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .user-profile-sidebar {
+    animation: fadeInProfile 0.5s ease-out;
+  }

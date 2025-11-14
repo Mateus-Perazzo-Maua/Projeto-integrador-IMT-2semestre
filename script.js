@@ -10,7 +10,60 @@ const historicoLista = document.getElementById("historico-lista");
 // url da API
 const API_URL = 'http://localhost:3000';
 
-// LOGIN
+// carregar perfil na barra lateral
+function carregarPerfilSidebar() {
+  const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+  
+  if (!usuario) {
+    console.log("Usuário não está logado");
+    return;
+  }
+
+  console.log("Carregando perfil para:", usuario);
+
+  // Buscar dados do usuário no banco
+  fetch(`${API_URL}/api/user-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: usuario })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Atualizar nome do usuário
+      const usernameElement = document.getElementById("sidebar-username");
+      if (usernameElement) {
+        usernameElement.textContent = data.user.username || "Usuário";
+      }
+
+      // Atualizar email
+      const emailElement = document.getElementById("sidebar-email");
+      if (emailElement) {
+        emailElement.textContent = usuario;
+      }
+
+      console.log("Perfil carregado:", data.user.username);
+    } else {
+      console.log("Erro ao carregar perfil:", data.message);
+      // Mostrar apenas email como fallback
+      const emailElement = document.getElementById("sidebar-email");
+      if (emailElement) {
+        emailElement.textContent = usuario;
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Erro ao buscar perfil:", err);
+    
+    // fallback: mostrar apenas o email
+    const emailElement = document.getElementById("sidebar-email");
+    if (emailElement) {
+      emailElement.textContent = usuario;
+    }
+  });
+}
+
+// login
 if (loginBtn) {
   loginBtn.addEventListener("click", async () => {
     const email = document.getElementById("email").value.trim();
@@ -23,7 +76,7 @@ if (loginBtn) {
     }
 
     try {
-      const resposta = await fetch("http://localhost:3000/login", {
+      const resposta = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -44,16 +97,16 @@ if (loginBtn) {
 
         window.location.href = "home.html";
       } else {
-        loginError.textContent = "❌ " + data.message;
+        loginError.textContent = " " + data.message;
       }
     } catch (err) {
-      loginError.textContent = "⚠️ Erro ao conectar ao servidor.";
+      loginError.textContent = "Erro ao conectar ao servidor.";
       console.error(err);
     }
   });
 }
 
-// CADASTRO DE USUÁRIO
+// cadastro de usuário
 const registerBtn = document.getElementById("registerBtn");
 if (registerBtn) {
   registerBtn.addEventListener("click", async () => {
@@ -64,12 +117,12 @@ if (registerBtn) {
     msg.textContent = "";
 
     if (!username || !email || !password) {
-      msg.textContent = "⚠️ Preencha todos os campos!";
+      msg.textContent = "Preencha todos os campos!";
       return;
     }
 
     try {
-      const resposta = await fetch("http://localhost:3000/register", {
+      const resposta = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
@@ -80,10 +133,10 @@ if (registerBtn) {
       if (resposta.ok) {
         msg.classList.remove("text-danger");
         msg.classList.add("text-success");
-        msg.textContent = "Usuário cadastrado com sucesso! redirecionando para o login";
+        msg.textContent = "Usuário cadastrado com sucesso! Redirecionando para o login...";
         setTimeout(() => (window.location.href = "tela-login.html"), 1500);
       } else {
-        msg.textContent = "⚠️ " + data.message;
+        msg.textContent = " " + data.message;
       }
     } catch (err) {
       msg.textContent = "Erro ao conectar com o servidor.";
@@ -92,8 +145,8 @@ if (registerBtn) {
   });
 }
 
-// verifica o login
-const protegido = ["home.html", "tela-gerar.html", "historico.html"];
+// verificação do login
+const protegido = ["home.html", "tela-gerar.html", "historico.html", "perfil.html"];
 const paginaAtual = window.location.pathname.split("/").pop();
 
 if (protegido.includes(paginaAtual)) {
@@ -102,6 +155,7 @@ if (protegido.includes(paginaAtual)) {
     window.location.href = "tela-login.html";
   }
 }
+
 
 // logout
 if (logoutBtn) {
@@ -114,7 +168,7 @@ if (logoutBtn) {
   });
 }
 
-// GERAR IMAGEM
+// gerar imagem
 if (gerarBtn) {
   gerarBtn.addEventListener("click", async () => {
     const materiaSelect = document.getElementById("materia");
@@ -155,18 +209,16 @@ if (gerarBtn) {
         <div class="spinner-border text-primary mb-3" role="status">
           <span class="visually-hidden">Carregando...</span>
         </div>
-        <p class="text-muted">🎨 Gerando imagem com IA...<br>Aguarde alguns segundos...</p>
+        <p class="text-muted"> Gerando imagem com IA...<br>Aguarde alguns segundos...</p>
       </div>
     `;
 
     try {
-      // construir o prompt completo
       const fullPrompt = `Educational illustration for ${materia}, topic: ${tema}. ${prompt}. High quality, detailed, clear, professional educational material`;
 
-      console.log('📤 Enviando requisição para gerar imagem...');
-      console.log('📝 Prompt:', fullPrompt);
+      console.log('Enviando requisição para gerar imagem...');
+      console.log('Prompt:', fullPrompt);
 
-      // chamar a API
       const email = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
 
       const response = await fetch(`${API_URL}/api/generate-image`, {
@@ -176,32 +228,28 @@ if (gerarBtn) {
           prompt: fullPrompt,
           negativePrompt: 'text, words, letters, low quality, blurry, distorted, ugly',
           style: estilo !== 'Selecione o estilo' ? estilo : null,
-          email // envia o e-mail do usuário logado para salvar no histórico
+          email
         })
       });
 
-
-      console.log('📥 Resposta recebida. Status:', response.status);
+      console.log('Resposta recebida. Status:', response.status);
 
       const data = await response.json();
-      console.log('📦 Dados recebidos:', data);
+      console.log('Dados recebidos:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Erro ao gerar imagem');
       }
 
-      // mostrar imagem
       const imgUrl = data.imageUrl;
-      console.log('🖼️ URL da imagem:', imgUrl);
+      console.log('URL da imagem:', imgUrl);
 
-      // limpar e mostrar o resultado
       resultado.innerHTML = '';
       resultado.classList.remove('d-none');
 
-      // criar elementos
       const title = document.createElement('h5');
       title.className = 'fw-semibold mb-3 text-center';
-      title.textContent = '✅ Resultado:';
+      title.textContent = 'Resultado:';
 
       const imgContainer = document.createElement('div');
       imgContainer.className = 'text-center mb-3';
@@ -215,10 +263,9 @@ if (gerarBtn) {
       img.style.display = 'block';
       img.style.margin = '0 auto';
 
-      // eventos da imagem
-      img.onload = () => console.log('✅ Imagem carregada e exibida!');
+      img.onload = () => console.log('Imagem carregada e exibida!');
       img.onerror = () => {
-        console.error('❌ Erro ao carregar imagem');
+        console.error('Erro ao carregar imagem');
         imgContainer.innerHTML = `
           <div class="alert alert-warning">
             Erro ao carregar. <a href="${imgUrl}" target="_blank">Clique aqui para ver</a>
@@ -239,17 +286,16 @@ if (gerarBtn) {
         </button>
       `;
 
-      // adicionar tudo ao resultado
       resultado.appendChild(title);
       resultado.appendChild(imgContainer);
       resultado.appendChild(btnContainer);
 
-      console.log('✅ Elementos criados e adicionados à página!');
+      console.log('Elementos criados e adicionados à página!');
 
-      // salvar no histórico
+      // Salvar no histórico
       const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
       if (usuario) {
-        const chaveHistorico = `historico_${usuario}`; // <-- chave única por usuário
+        const chaveHistorico = `historico_${usuario}`;
         const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
       
         historico.unshift({
@@ -264,27 +310,23 @@ if (gerarBtn) {
       
         localStorage.setItem(chaveHistorico, JSON.stringify(historico));
       
-        // salvar no banco (para histórico persistente)
         fetch(`${API_URL}/api/save-history`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: usuario,
-            imageData: historico[0] // salva apenas a última imagem
+            imageData: historico[0]
           })
         }).catch(console.error);
       }
-      
 
-      // scroll até o resultado
       setTimeout(() => {
         resultado.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 200);
 
     } catch (error) {
-      console.error('❌ Erro ao gerar imagem:', error);
+      console.error('Erro ao gerar imagem:', error);
 
-      // mostrar erro para o usuário
       resultado.innerHTML = `
         <div class="alert alert-danger" role="alert">
           <i class="bi bi-exclamation-triangle me-2"></i>
@@ -293,14 +335,14 @@ if (gerarBtn) {
         </div>
       `;
     } finally {
-      // reabilitar botão
       gerarBtn.disabled = false;
       gerarBtn.innerHTML = originalBtnHtml;
     }
   });
 }
 
-// Temas automáticos por matéria
+
+// temas por matéria
 const temas = {
   fisica: ["Leis de Newton", "Eletromagnetismo", "Óptica", "Movimento Retilíneo"],
   quimica: ["Tabela Periódica", "Ligações Químicas", "Reações Orgânicas", "Atomística"],
@@ -325,7 +367,7 @@ if (materiaSelect && temaSelect) {
   });
 }
 
-// HISTÓRICO DE IMAGENS
+// histórico
 if (historicoLista) {
   const usuario = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
   const chaveHistorico = `historico_${usuario}`;
@@ -358,10 +400,10 @@ if (historicoLista) {
       cardBody.className = "card-body text-start";
 
       const infoHtml = `
-        <p class="mb-1"><strong>📘 Matéria:</strong> ${materia}</p>
-        <p class="mb-1"><strong>🧩 Tema:</strong> ${tema}</p>
-        <p class="mb-2 small text-muted"><strong>🕒</strong> ${new Date(data).toLocaleString()}</p>
-        <p class="small"><strong>🖋️ Descrição:</strong> ${prompt}</p>
+        <p class="mb-1"><strong>Matéria:</strong> ${materia}</p>
+        <p class="mb-1"><strong>Tema:</strong> ${tema}</p>
+        <p class="mb-2 small text-muted"> ${new Date(data).toLocaleString()}</p>
+        <p class="small"><strong>Descrição:</strong> ${prompt}</p>
       `;
 
       cardBody.innerHTML = infoHtml;
@@ -386,7 +428,6 @@ if (historicoLista) {
   }
 }
 
-
 // Toggle da sidebar em telas pequenas
 document.addEventListener("DOMContentLoaded", function () {
   const menuToggle = document.getElementById("menuToggle");
@@ -399,9 +440,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Carregar perfil do usuário na sidebar
+  const paginasComPerfil = ["home.html", "tela-gerar.html", "historico.html", "perfil.html"];
+  const paginaAtual = window.location.pathname.split("/").pop();
+  
+  if (paginasComPerfil.includes(paginaAtual)) {
+    carregarPerfilSidebar();
+  }
+
   // verificar status da API quando carrega a página de gerar
   if (gerarBtn) {
     checkAPIStatus();
+  }
+
+  // Carregar estatísticas na home
+  if (paginaAtual === "home.html") {
+    carregarEstatisticas();
   }
 });
 
@@ -412,11 +466,11 @@ async function checkAPIStatus() {
     const data = await response.json();
 
     if (data.status === 'online') {
-      console.log('✅ Servidor conectado e funcionando');
-      console.log('🎨 API:', data.message);
+      console.log('Servidor conectado e funcionando');
+      console.log('API:', data.message);
     }
   } catch (error) {
-    console.error('❌ Erro ao conectar com servidor:', error);
+    console.error('Erro ao conectar com servidor:', error);
 
     const aviso = document.createElement('div');
     aviso.className = 'alert alert-danger mt-3';
@@ -443,13 +497,9 @@ function carregarEstatisticas() {
   const chaveHistorico = `historico_${usuario}`;
   const historico = JSON.parse(localStorage.getItem(chaveHistorico)) || [];
   
-  // Calcular estatísticas
   const totalImagens = historico.length;
-  
-  // Calcular tempo médio
   const tempoMedio = totalImagens > 0 ? "8-15s" : "0s";
   
-  // Encontrar tema mais popular
   const temasMapa = {};
   historico.forEach(item => {
     const tema = item.tema || "Desconhecido";
@@ -466,75 +516,15 @@ function carregarEstatisticas() {
     }
   }
   
-  // Atualizar DOM
   atualizarEstatisticasDOM(totalImagens, tempoMedio, temaPopular);
 }
 
 function atualizarEstatisticasDOM(total, tempo, tema) {
-  // Seletor para os cards de estatísticas
   const statCards = document.querySelectorAll('.stat-card h4');
   
   if (statCards.length >= 3) {
-    // Atualizar total de imagens
     statCards[0].textContent = total;
-    
-    // Atualizar tempo médio
     statCards[1].textContent = tempo;
-    
-    // Atualizar tema popular
     statCards[2].textContent = `"${tema}"`;
   }
 }
-
-// Carregar estatísticas quando a página home carregar
-document.addEventListener("DOMContentLoaded", function() {
-  const paginaAtual = window.location.pathname.split("/").pop();
-  
-  if (paginaAtual === "home.html") {
-    carregarEstatisticas();
-    
-    // Adicionar animação de entrada nas estatísticas
-    const statCards = document.querySelectorAll('.stat-card');
-    statCards.forEach((card, index) => {
-      setTimeout(() => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'all 0.5s ease';
-        
-        setTimeout(() => {
-          card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
-        }, 50);
-      }, index * 100);
-    });
-  }
-});
-
-// atualiza as estatísticas na home
-async function atualizarEstatisticas() {
-      try {
-        const email = localStorage.getItem("email"); // pega o email do login
-        if (!email) return; // se não estiver logado, sai
-  
-        const response = await fetch("http://localhost:3000/api/history", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        });
-  
-        const data = await response.json();
-  
-        if (data.success) {
-          const totalImagens = data.history.length;
-          const estatisticaImagens = document.getElementById("total-imagens");
-          estatisticaImagens.textContent = totalImagens;
-  
-          console.log(`Imagens geradas: ${totalImagens}`);
-        }
-      } catch (error) {
-        console.error("Erro ao atualizar estatísticas:", error);
-      }
-    }
-  
-    // atualiza ao carregar a página
-    document.addEventListener("DOMContentLoaded", atualizarEstatisticas);
