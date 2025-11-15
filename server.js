@@ -486,19 +486,14 @@ app.post("/api/user-profile", async (req, res) => {
       });
     }
 
-    console.log("🔍 Buscando perfil para:", email);
-
     const user = await User.findOne({ email });
 
     if (!user) {
-      console.log("Usuário não encontrado:", email);
       return res.status(404).json({
         success: false,
         message: "Usuário não encontrado"
       });
     }
-
-    console.log("Perfil encontrado:", user.username);
 
     // retornar dados necessários
     res.json({
