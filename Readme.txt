@@ -1,12 +1,74 @@
-O GerAIpoliedro é uma aplicação web desenvolvida para o Colégio Poliedro, projetada para fornecer uma ferramenta de geração de imagens por Inteligência Artificial, 
-otimizando a criação de recursos visuais para professores.
+GerAI Poliedro
 
-A arquitetura do projeto é baseada nas tecnologias essenciais do front-end: HTML5 é utilizado para a estruturação da interface (como a área de prompt e exibição de resultados), 
-enquanto o CSS3 é responsável por toda a camada de apresentação, estilização e design responsivo.
+Geração de imagens educacionais com Inteligência Artificial — desenvolvido para o Colégio Poliedro
 
-Abase funcional da ferramenta foi feita no JavaScript (JS). 
-Ele gerencia toda a lógica de interatividade, capturando o prompt de texto do usuário e fazendo a comunicação com os serviços de IA.
+O GerAI Poliedro é uma aplicação web criada para auxiliar professores na criação rápida de recursos visuais educativos usando IA.
+A ferramenta permite que o usuário selecione uma matéria, um tema e descreva a imagem desejada, gerando automaticamente uma ilustração de alta qualidade, pronta para ser usada em sala de aula.
 
-Para garantir a alta disponibilidade da ferramenta e diminuir a chance de bugs ou erros, o sistema implementa uma lógica de fallback: a API Black Forest é usada como fonte primária para a geração de imagens. 
-Caso esta API apresente falha ou indisponibilidade, 
-o código automaticamente aciona uma requisição de contingência para a API Pollinations, assegurando que o usuário receba o resultado e mantendo a funcionalidade da aplicação.
+1. Funcionalidades Principais:
+- Geração de imagens por IA usando prompt + tema + matéria
+- Histórico salvo localmente e no backend, com data, prompt e preview
+- Download direto das imagens geradas
+- Controle por usuário (via e-mail salvo no navegador)
+- Interface simples e otimizada para uso educacional
+
+2. Tecnologias Utilizadas:
+- HTML5
+- CSS3
+- JavaScript (Frontend)
+- Node.js + Express (Backend)
+- APIs de IA (Black Forest / Pollinations)
+
+3. Arquitetura da Aplicação:
+
+  3.1. HTML5 – Estrutura
+  Responsável pela organização da interface:
+    - Área de prompt
+    - Seleção de matéria e tema
+    - Área de resultado
+    - Botões de ação (gerar, baixar, histórico etc.)
+
+  3.2. CSS3 – Estilização e Design Responsivo
+  Responsável pelo visual do sistema:
+    - Layout e responsividade
+    - Tipografia
+    - Botões e estados (hover/loading)
+    - Cards e contêineres
+
+  3.3. JavaScript – Lógica e Comunicação com APIs
+  Toda a inteligência do sistema está em JS:
+    - Captura de dados do formulário
+    - Envio de requisições para a API de IA
+    - Exibição do carregamento
+    - Renderização da imagem resultante
+    - Salvamento do histórico local + servidor
+    - Implementação da lógica de fallback
+
+4. Instalação e Execução:
+
+  4.1. Clonar o repositório
+    - git clone https://github.com/Mateus-Perazzo-Maua/Projeto-integrador-IMT-2semestre.git
+  
+  4.2. Instalar dependências
+    - npm install
+  
+  4.3. Executar o backend
+    - npm start
+
+  4.4. Abrir o frontend
+    - Abra o arquivo tela-cadastro.html no seu navegador (ou use um servido local como Live Server)
+
+5. Projeto desenvolvido para: Colégio Poliedro
+
+6. Desenvolvido por:
+  - Gabriel Yuiti Shigetomi Silva
+  - Mateus Perazzo
+  - Mateus Perigo Zechetti
+  - Pietro Luiz Arrelaro Viscardi
+
+
+
+
+
+
+
