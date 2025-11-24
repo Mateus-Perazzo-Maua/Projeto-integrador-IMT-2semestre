@@ -61,16 +61,10 @@ if (gerarBtn) {
         const originalBtnHtml = gerarBtn.innerHTML;
         gerarBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando...';
 
-        // mostrar carregando
-        resultado.classList.remove("d-none");
-        resultado.innerHTML = `
-      <div class="text-center">
-        <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Carregando...</span>
-        </div>
-        <p class="text-muted"> Gerando imagem com IA...<br>Aguarde alguns segundos...</p>
-      </div>
-    `;
+        // mostrar mensagem de carregamento
+        const loadingMessage = document.getElementById('loadingMessage');
+        loadingMessage.classList.remove('d-none');
+        resultado.classList.add('d-none');
 
         try {
             const fullPrompt = `Educational illustration for ${materia}, topic: ${tema}. ${prompt}. High quality, detailed, clear, professional educational material`;
@@ -101,10 +95,9 @@ if (gerarBtn) {
             }
 
             const imgUrl = data.imageUrl;
-            console.log('URL da imagem:', imgUrl);
+            console.log('URL da imagem:', imgUrl);;
 
             resultado.innerHTML = '';
-            resultado.classList.remove('d-none');
 
             const title = document.createElement('h5');
             title.className = 'fw-semibold mb-3 text-center';
@@ -122,9 +115,19 @@ if (gerarBtn) {
             img.style.display = 'block';
             img.style.margin = '0 auto';
 
-            img.onload = () => console.log('Imagem carregada e exibida!');
+            img.onload = () => {
+                console.log('Imagem carregada e exibida!');
+                // esconde mensagem de carregamento
+                loadingMessage.classList.add('d-none');
+                // mostra resultado
+                resultado.classList.remove('d-none');
+            };
+
             img.onerror = () => {
                 console.error('Erro ao carregar imagem');
+                // esconde mensagem se der erro no carregamento
+                loadingMessage.classList.add('d-none');
+                resultado.classList.remove('d-none');
                 imgContainer.innerHTML = `
           <div class="alert alert-warning">
             Erro ao carregar. <a href="${imgUrl}" target="_blank">Clique aqui para ver</a>
