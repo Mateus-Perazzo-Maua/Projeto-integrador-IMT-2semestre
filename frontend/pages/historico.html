@@ -25,7 +25,8 @@
 
             <!-- perfil do usuário -->
             <div class="user-profile-sidebar mb-3">
-                <a href="perfil.html" class="d-flex align-items-center text-white text-decoration-none p-3 rounded-3 user-profile-link">
+                <a href="perfil.html"
+                    class="d-flex align-items-center text-white text-decoration-none p-3 rounded-3 user-profile-link">
                     <div class="user-avatar me-3">
                         <i class="bi bi-person-circle fs-2"></i>
                     </div>
@@ -62,6 +63,18 @@
         </main>
 
     </div>
+
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        new window.VLibras.Widget('https://vlibras.gov.br/app')
+    </script>
     <script src="../assets/js/utils.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/historico.js"></script>
